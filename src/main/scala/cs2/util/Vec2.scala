@@ -84,15 +84,17 @@ class Vec2 (var x:Double, var y:Double) {
 
   //Methods to return a new vector that is in the same direction, but length 1 (same returns)
   def normalize():Vec2 = {
-  this.x = this.x / this.magnitude()
-  this.y = this.y / this.magnitude()
+  var a = this.magnitude()
+  this.x = this.x / a
+  this.y = this.y / a
   this 
 }
   def unary_~ : Vec2 = { 
-  this.x = this.x / this.magnitude()
-  this.y = this.y / this.magnitude()
+  var a = this.magnitude()
+  this.x = this.x / a
+  this.y = this.y / a
   this 
-   }
+}
 
   //A clone operator can be useful when making "deep" copies of objects
   override def clone():Vec2 = { 
@@ -112,10 +114,12 @@ object Vec2 {
     var a = apply(98.4736,29.4241)
     var b = apply(97.7431,30.2672)
     var distancechange = apply(b.x-a.x,b.y-a.y)
-    var speedvector =distancechange/1.5
+    var speedvector = distancechange/1.5
     var seconddistancechange = speedvector*2.5
     var finalanswer = seconddistancechange+b
     println(finalanswer)
+    var c = apply(3,4)
+    println(c.normalize())
 
   }
 }
