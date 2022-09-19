@@ -5,37 +5,100 @@ class Vec2 (var x:Double, var y:Double) {
   override def toString():String = "("+x+","+y+")"
   
   //Methods for addition and subtraction of vectors
-  def +  (other:Vec2):Vec2 = { ??? }
-  def += (other:Vec2):Unit = { ??? }
+  def +  (other:Vec2):Vec2 = {
+  this.x = this.x + other.x
+  this.y = this.y +other.y
+  this
+}
+  def += (other:Vec2):Unit = { 
+  this.x = this.x + other.x
+  this.y = this.y +other.y
+  }
   
-  def -  (other:Vec2):Vec2 = { ??? }
-  def -= (other:Vec2):Unit = { ??? }
+  def -  (other:Vec2):Vec2 = {
+  this.x = this.x - other.x
+  this.y = this.y - other.y
+  this
+  }
+  def -= (other:Vec2):Unit = { 
+  this.x = this.x - other.x
+  this.y = this.y - other.y
+  }
 
   //Methods for multiplication and division of vectors by a scalar (non-vector)
-  def *  (scalar:Double):Vec2 = { ??? }
-  def *= (scalar:Double):Unit = { ??? }
+  def *  (scalar:Double):Vec2 = { 
+  this.x = scalar*this.x
+  this.y = scalar*this.y
+  this 
+  }
+  def *= (scalar:Double):Unit = { 
+  this.x = scalar*this.x
+  this.y = scalar*this.y
+  }
 
-  def /  (scalar:Double):Vec2 = { ??? }
-  def /= (scalar:Double):Unit = { ??? }
+  def /  (scalar:Double):Vec2 = { 
+  this.x = this.x/scalar
+  this.y = this.y/scalar
+  this
+  }
+  def /= (scalar:Double):Unit = { 
+  this.x = this.x/scalar
+  this.y = this.y/scalar
+  }
 
   //Methods to determine the length of a vector (magnitude and length should return the same value)
-  def magnitude():Double = { ??? }
-  def length():Double = { ??? }
+  def magnitude():Double = { 
+  val a = this.x*this.x
+  val b = this.y*this.y
+  val c = math.sqrt(a+b)
+  c
+  }
+  def length():Double = {
+  val a = this.x*this.x
+  val b = this.y*this.y
+  val c = math.sqrt(a+b)
+  c
+  }
   
   //Methods to calculate the dot product (same returns)
-  def dot(other:Vec2):Double = { ??? }
-  def **(other:Vec2):Double = { ??? }
+  def dot(other:Vec2):Double = { this.x*other.x+this.y*other.y}
+  def **(other:Vec2):Double = { this.x*other.x+this.y*other.y }
   
   //Methods to determine the angle between 2 vectors (same returns)
-  def angleBetween(other:Vec2):Double = { ??? }
-  def <>(other:Vec2):Double = { ??? }
+  def angleBetween(other:Vec2):Double = {
+  val a = this.magnitude()
+  val b = other.magnitude()
+  val c = this**other
+  val d = c/(a*b)
+  val e = math.acos(d)
+  e
+  }
+  def <>(other:Vec2):Double = {
+  val a = this.magnitude()
+  val b = other.magnitude()
+  val c = this**other
+  val d = c/(a*b)
+  val e = math.acos(d)
+  e
+  }
 
   //Methods to return a new vector that is in the same direction, but length 1 (same returns)
-  def normalize():Vec2 = { ??? }
-  def unary_~ : Vec2 = { ??? }
+  def normalize():Vec2 = {
+  this.x = this.x / this.magnitude()
+  this.y = this.y / this.magnitude()
+  this 
+}
+  def unary_~ : Vec2 = { 
+  this.x = this.x / this.magnitude()
+  this.y = this.y / this.magnitude()
+  this 
+   }
 
   //A clone operator can be useful when making "deep" copies of objects
-  override def clone():Vec2 = { ??? }
+  override def clone():Vec2 = { 
+    var clone1 = this
+    clone1
+   }
 }
 
 object Vec2 {
@@ -46,8 +109,13 @@ object Vec2 {
   def apply():Vec2 = { new Vec2(0, 0) }
 
   def main(args:Array[String]):Unit = {
-    /** Your solution to the physics problem described should be calculated here.
-     *  Remember to print out your answer using println.
-     */
+    var a = apply(98.4736,29.4241)
+    var b = apply(97.7431,30.2672)
+    var distancechange = apply(b.x-a.x,b.y-a.y)
+    var speedvector =distancechange/1.5
+    var seconddistancechange = speedvector*2.5
+    var finalanswer = seconddistancechange+b
+    println(finalanswer)
+
   }
 }
