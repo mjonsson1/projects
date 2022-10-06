@@ -2,6 +2,10 @@ package cs2.game
 
 import scalafx.scene.image.Image
 import cs2.util.Vec2
+import scalafx.event.Event
+import scalafx.scene.input.MouseEvent
+import scalafx.scene.input.KeyEvent
+import scalafx.scene.input.KeyCode
 
 /** Representation of a bullet/projectile for a simple game based on sprites.
  *  Handles all information regarding a bullet's position, movements, and 
@@ -17,6 +21,15 @@ class Bullet(pic:Image, initPos:Vec2, private var vel:Vec2) extends Sprite(pic, 
    * 
    *  @return none/Unit
    */
-  def timeStep():Unit = { }
+  def timeStep():Unit = {
+
+    if(initPos.y>= -50){
+    initPos.x+=vel.x
+    initPos.y-=vel.y
+    }
+
+
+  }
+
   
 }

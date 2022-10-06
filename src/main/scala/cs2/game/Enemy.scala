@@ -10,12 +10,16 @@ import cs2.util.Vec2
  *  @param initPos the initial position of the '''center''' of the enemy
  *  @param bulletPic the image of the bullets fired by this enemy
  */
-class Enemy(pic:Image, initPos:Vec2, private val bulletPic:Image) extends Sprite(pic, initPos) {
+class Enemy(pic:Image, var initPos:Vec2, private val bulletPic:Image) extends Sprite(pic, initPos) {
 
   /** creates a new Bullet instance beginning from this Enemy, with an appropriate velocity
    *
    *  @return Bullet - the newly created Bullet object that was fired
    */
-  def shoot():Bullet = { ??? }
+  def shoot():Bullet = {
+
+    new Bullet(SpriteList.EnemyBullet,new Vec2(initPos.x+23,initPos.y+38), Vec2(0,-20))
+
+   }
 
 }

@@ -6,9 +6,9 @@ class Vec2 (var x:Double, var y:Double) {
   
   //Methods for addition and subtraction of vectors
   def +  (other:Vec2):Vec2 = {
-  this.x = this.x + other.x
-  this.y = this.y +other.y
-  this
+  val a = this.x + other.x
+  val b = this.y +other.y
+  Vec2(a,b)
 }
   def += (other:Vec2):Unit = { 
   this.x = this.x + other.x
@@ -16,9 +16,9 @@ class Vec2 (var x:Double, var y:Double) {
   }
   
   def -  (other:Vec2):Vec2 = {
-  this.x = this.x - other.x
-  this.y = this.y - other.y
-  this
+  val a = this.x - other.x
+  val b = this.y - other.y
+  Vec2(a,b)
   }
   def -= (other:Vec2):Unit = { 
   this.x = this.x - other.x
@@ -27,9 +27,9 @@ class Vec2 (var x:Double, var y:Double) {
 
   //Methods for multiplication and division of vectors by a scalar (non-vector)
   def *  (scalar:Double):Vec2 = { 
-  this.x = scalar*this.x
-  this.y = scalar*this.y
-  this 
+  val a = scalar*this.x
+  val b = scalar*this.y
+  Vec2(a,b)
   }
   def *= (scalar:Double):Unit = { 
   this.x = scalar*this.x
@@ -37,9 +37,9 @@ class Vec2 (var x:Double, var y:Double) {
   }
 
   def /  (scalar:Double):Vec2 = { 
-  this.x = this.x/scalar
-  this.y = this.y/scalar
-  this
+  val a = this.x/scalar
+  val b = this.y/scalar
+  Vec2(a,b)
   }
   def /= (scalar:Double):Unit = { 
   this.x = this.x/scalar
@@ -123,3 +123,4 @@ object Vec2 {
 
   }
 }
+

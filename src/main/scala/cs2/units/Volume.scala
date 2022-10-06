@@ -6,26 +6,26 @@ class Volume() {
 
   //Basic math operators to add, subtract, and scale volumes
   def + (other:Volume):Volume = { 
-    this.lit=this.lit + other.lit
-    return Volume(this.lit)
+    val a = this.lit + other.lit
+    return Volume(a)
   }
   def += (other:Volume):Unit  = { this.lit = this.lit + other.lit }
 
   def - (other:Volume):Volume = { 
-    this.lit=this.lit - other.lit
-    return Volume(this.lit)
+    val a = this.lit - other.lit
+    return Volume(a)
   }
   def -= (other:Volume):Unit  = { this.lit = this.lit-other.lit}
 
   def * (scalar:Double):Volume = { 
-    this.lit=this.lit*scalar 
-    return Volume(this.lit)
+    val a = this.lit*scalar 
+    return Volume(a)
   }
   def *= (scalar:Double):Unit  = { this.lit=this.lit*scalar}
 
   def / (scalar:Double):Volume = { 
-    this.lit=this.lit/scalar
-    return Volume(this.lit)
+    val a = this.lit/scalar
+    return Volume(a)
   }
   def /= (scalar:Double):Unit  = { this.lit=this.lit/scalar}
 
@@ -83,31 +83,31 @@ object Volume {
   tmp 
   } //identical to an apply method
   def milliliters(amt:Double):Volume = { 
-  val tmp:Volume = apply(amt*1000)
+  val tmp:Volume = apply(amt/1000)
   tmp
   }
   def gallons(amt:Double):Volume = {
-  val tmp:Volume = apply(amt*3.78541)
+  val tmp:Volume = apply(amt/3.78541)
   tmp
   }
   def quarts(amt:Double):Volume = {
-  val tmp = gallons(amt)*4 
+  val tmp = gallons(amt)/4 
   tmp
   }
   def pints(amt:Double):Volume = { 
-  val tmp = gallons(amt)*8
+  val tmp = gallons(amt)/8
   tmp
   }
   def cups(amt:Double):Volume = { 
-  val tmp = gallons(amt)*16
+  val tmp = gallons(amt)/16
   tmp
   }
   def teaspoons(amt:Double):Volume = {
-  val tmp:Volume = apply(amt*202.884)
+  val tmp:Volume = apply(amt/202.884)
   tmp
   }
   def tablespoons(amt:Double):Volume = { 
-  val tmp:Volume = apply(amt*67.628)
+  val tmp:Volume = apply(amt/67.628)
   tmp
   }
 
