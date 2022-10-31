@@ -18,7 +18,7 @@ class Enemy(pic:Image, var initPos:Vec2, private val bulletPic:Image) extends Sp
    */
   def shoot():Bullet = {
 
-    new Bullet(SpriteList.EnemyBullet,new Vec2(initPos.x+23,initPos.y+38), Vec2(0,-20))
+    new Bullet(SpriteList.EnemyBullet,new Vec2(initPos.x+23,initPos.y+38), Vec2(0,-6))
 
    }
 

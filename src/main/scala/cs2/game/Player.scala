@@ -12,7 +12,7 @@ import cs2.util.Vec2
  */
 class Player(var avatar:Image, var initPos:Vec2, private val bulletPic:Image) extends Sprite(avatar, initPos) {
 
-  val vel = Vec2(10,10)
+  val vel = Vec2(5,5)
 
 
   /** moves the player sprite one "step" to the left.  The amount of this
@@ -25,36 +25,32 @@ class Player(var avatar:Image, var initPos:Vec2, private val bulletPic:Image) ex
   
 
     if(initPos.x>10){
-    initPos.x-=vel.x
+      initPos.x-=vel.x
   }
     else
-    initPos.x=initPos.x
+      initPos.x+=0
   
 }
-  /** moves the player sprite one "step" to the right (see note above)
-   *
-   *  
-   */
   def moveRight():Unit = {  
     if(initPos.x<1220){
-    initPos.x = initPos.x + vel.x
+      initPos.x = initPos.x + vel.x
     }
     else
-    initPos.x = initPos.x
+      initPos.x = initPos.x
 }
   def moveUp():Unit = {
     if(initPos.y>10){
-    initPos.y -= vel.y
+      initPos.y -= vel.y
     }
     else
-    initPos.y = initPos.y
+      initPos.y += 0
   }
   def moveDown():Unit = {
-    if(initPos.y<790){
-    initPos.y += vel.y
+    if(initPos.y<750){
+      initPos.y += vel.y
     }
-    else
-    initPos.y = initPos.y
+    else if (initPos.y >= 750)
+    initPos.y += 0
   }
 
   
@@ -64,10 +60,25 @@ class Player(var avatar:Image, var initPos:Vec2, private val bulletPic:Image) ex
    *
    *  @return Bullet - the newly created Bullet object that was fired
    */
-  def shoot():Bullet = { 
 
-    new Bullet(bulletPic, new Vec2(initPos.x,initPos.y-10), Vec2(0,20))
-  
+ /* def slowdown():Boolean = {
+    var countdown = 100000
+    var ready = false
+    if(countdown > 0){
+      countdown -=1
+      ready = false
+    }
+    if(countdown == 0){
+      countdown = 100000
+      ready = true
+    }
+    ready
+  }
+  */
+
+  def shoot():Bullet = { 
+    val playerwidth = avatar.width.value
+    new Bullet(bulletPic, new Vec2(initPos.x+playerwidth/2-3,initPos.y-50), Vec2(0,20))
   }
   
 

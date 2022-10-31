@@ -3,6 +3,8 @@ package cs2.game
 import scalafx.scene.canvas.GraphicsContext
 import cs2.util.Vec2
 import scala.util.Random
+import scala.collection.mutable.Buffer
+import scalafx.scene.input.KeyCode
 
 /** contains the control and logic to present a coordinated set of Enemy objects.
  *  For now, this class generates a "grid" of enemy objects centered near the
@@ -18,23 +20,49 @@ class EnemySwarm(private val nRows:Int, private val nCols:Int) {
    *  @return none/Unit
    */
 
-  var EnemyList = List[Enemy]()
+  var EnemyBuffer = Buffer[Enemy]()
   for(r <- 1 to nRows;c<- 1 to nCols){
-  EnemyList ::= new Enemy(SpriteList.AlienShipPurple, new Vec2(182*r-25,80*c), SpriteList.EnemyBullet)
+  EnemyBuffer += new Enemy(SpriteList.AlienShipPurple, new Vec2(182*r-25,80*c), SpriteList.EnemyBullet)
   }
 
   def display(g:GraphicsContext):Unit = {
-  EnemyList.foreach(_.display(g))
+  EnemyBuffer.foreach(_.display(g))
   }
 
-  /** overridden method of ShootsBullets. Creates a single, new bullet instance
-   *  originating from a random enemy in the swarm. (Not a bullet from every
-   *  object, just a single from a random enemy)
-   *
-   *  @return Bullet - the newly created Bullet object fired from the swarm
-   */
   def swarmshoot():Bullet = { 
-    EnemyList((math.random*EnemyList.length).toInt).shoot()
+    EnemyBuffer((math.random*EnemyBuffer.length).toInt).shoot()
+   }
+
+  def enemyHit(A:Sprite): Boolean = {
+    val plp = SpriteList.SpaceCraft //Player img pic
+    val pbp = SpriteList.GamerBullet // player bullet pic, need to specify that only player bullets have this action
+    var EnemyRemoveBuffer =  Buffer[Enemy]()
+    var wasHit = false
+    for(Enemy <- EnemyBuffer){
+      if(Enemy.intersection(A) && (A.picture == pbp)) { 
+        EnemyRemoveBuffer+= Enemy
+        wasHit = true
+      }
+    }
+      EnemyBuffer --= EnemyRemoveBuffer
+      wasHit
+   }
+   def enemyBump(A:Sprite): Boolean = {
+      val plp = SpriteList.SpaceCraft
+      var wasBumped = false
+      for(Enemy <- EnemyBuffer){
+        if(Enemy.intersection(A) && A.picture == plp){
+          wasBumped = true
+        }
+      }
+      wasBumped
+   }
+
+   def isEmpty():Boolean = {
+    var empty = false
+    if(EnemyBuffer.length == 0)
+    empty = true
+    empty
    }
 
 }

@@ -21,22 +21,18 @@ import scalafx.scene.input.KeyCode
 
 
 abstract class Sprite (protected val img:Image, protected var pos:Vec2) {
-
-
-
-  
-  /** moves the sprite a relative amount based on a specified vector
+    /** moves the sprite a relative amount based on a specified vector
    *  
    *  @param direction - an offset that the position of the sprite should be moved by
    *  @return none/Unit
    */
+
+   val picture = img
   def move (direction:Vec2):Unit = {
   pos.x +=direction.x
   pos.y -=direction.y
   
    }
-
-  
   /** moves the sprite to a specific location specified by a vector (not a relative movement)
    *  
    *  @param location - the new location for the sprite's position
@@ -59,5 +55,18 @@ abstract class Sprite (protected val img:Image, protected var pos:Vec2) {
 
   }
 
-  
+  def intersection(A:Sprite):Boolean = {
+    var hit = false
+    val qwidth = this.img.width.value
+    val awidth = A.img.width.value
+    val qheight = this.img.height.value
+    val aheight = A.img.height.value
+    val aimg = A.img
+    val timg = this.img
+    if(((this.pos.x+qwidth > A.pos.x && this.pos.x < A.pos.x+awidth) && (this.pos.y + qheight > A.pos.y && this.pos.y < A.pos.y +aheight)) && (aimg != timg))
+      hit=true
+    hit
+  }
+
+
 }
