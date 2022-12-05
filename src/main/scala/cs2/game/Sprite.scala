@@ -47,6 +47,14 @@ abstract class Sprite (protected val img:Image, protected var pos:Vec2) {
 
   }
 
+  def checkBounds(canvasDimensions:Vec2):Boolean = { //Strictly written for enemy motion
+    var inBounds = false
+    if(pos.x < 0 || pos.x + this.img.width.value > 1280 || pos.y < 0 || pos.y > 2*canvasDimensions.y/5){
+      inBounds = true
+    }
+    inBounds
+  }
+
   def intersection(A:Sprite):Boolean = {
     var hit = false
     val qwidth = this.img.width.value

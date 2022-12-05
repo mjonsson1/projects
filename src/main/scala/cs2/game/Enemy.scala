@@ -12,14 +12,22 @@ import cs2.util.Vec2
  */
 class Enemy(pic:Image, var initPos:Vec2, private val bulletPic:Image) extends Sprite(pic, initPos) {
 
-  /** creates a new Bullet instance beginning from this Enemy, with an appropriate velocity
-   *
-   *  @return Bullet - the newly created Bullet object that was fired
-   */
+
+  private var vel = 1
   def shoot():Bullet = {
 
     new Bullet(SpriteList.EnemyBullet,new Vec2(initPos.x+23,initPos.y+38), Vec2(0,-6))
 
    }
+
+  def move(): Unit = {
+    if(checkBounds(new Vec2(1080,720))){
+      vel *= -1
+  }
+    initPos.x += vel
+    initPos.y += vel
+  }
+
+  
 
 }

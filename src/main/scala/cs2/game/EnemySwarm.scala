@@ -58,6 +58,8 @@ class EnemySwarm(private val nRows:Int, private val nCols:Int) {
       wasBumped
    }
 
+  def swarmMove() {EnemyBuffer.foreach(_.move()) }
+
    def isEmpty():Boolean = {
     var empty = false
     if(EnemyBuffer.length == 0)

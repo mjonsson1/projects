@@ -25,255 +25,371 @@ import java.awt.RenderingHints.Key
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.Set
 
-
-
-
 /** main object that initiates the execution of the game, including construction
- *  of the window.
- *  Will create the stage, scene, and canvas to draw upon. Will likely contain or
- *  refer to an AnimationTimer to control the flow of the game.
- */
+  * of the window. Will create the stage, scene, and canvas to draw upon. Will
+  * likely contain or refer to an AnimationTimer to control the flow of the
+  * game.
+  */
 object SpaceGameApp extends JFXApp {
 
+  val Gamer = new Player(
+    SpriteList.SpaceCraft,
+    new Vec2(615, 720),
+    SpriteList.GamerBullet
+  )
+  val GamerBullet = new Bullet(
+    SpriteList.GamerBullet,
+    new Vec2(Gamer.initPos.x, Gamer.initPos.y + 100),
+    Vec2(0, 2.5)
+  )
+  // val Evil = new Enemy(SpriteList.AlienShipPurple, new Vec2(300,300), SpriteList.EnemyBullet)
+  // val EnemyBullet = new Bullet(SpriteList.EnemyBullet, new Vec2(Enemy.initPos.x,Enemy.initPos.y), Vec2(0,2.5))
+  var Swarm = new EnemySwarm(6, 3)
 
+  var BulletBuffer = Buffer[Bullet]()
+  // var EnemyBulletBuffer = Buffer[Bullet]()
+  var EnemySwarmBuffer = Buffer[Enemy]()
+  var KeysTrackedSet = Set[KeyCode]()
+  var BulletRemoveBuffer = Buffer[Bullet]()
 
-    val Gamer = new Player(SpriteList.SpaceCraft, new Vec2(615,720), SpriteList.GamerBullet)
-    val GamerBullet = new Bullet(SpriteList.GamerBullet, new Vec2(Gamer.initPos.x,Gamer.initPos.y+100), Vec2(0,2.5))
-    //val Evil = new Enemy(SpriteList.AlienShipPurple, new Vec2(300,300), SpriteList.EnemyBullet)
-    //val EnemyBullet = new Bullet(SpriteList.EnemyBullet, new Vec2(Enemy.initPos.x,Enemy.initPos.y), Vec2(0,2.5))
-    var Swarm = new EnemySwarm(6,3)
+  stage = new JFXApp.PrimaryStage {
+    title = "Space Invaders Over Saturn"
+    scene = new Scene(1280, 800) {
+      val canvas = new Canvas(1280, 800)
+      content = canvas
+      val g = canvas.graphicsContext2D
 
-    var BulletBuffer = Buffer[Bullet]()
-    //var EnemyBulletBuffer = Buffer[Bullet]()
-    var EnemySwarmBuffer = Buffer[Enemy]()
-    var KeysTrackedSet = Set[KeyCode]()
-    var BulletRemoveBuffer = Buffer[Bullet]()
-    
-    stage = new JFXApp.PrimaryStage {
-        title = "Knockoff Galaga XD!"
-        scene = new Scene(1280,800) {
-            val canvas = new Canvas(1280,800)
-            content = canvas
-            val g = canvas.graphicsContext2D
+        //val TitleScreen = g.setTextAlign(TextAlignment.Center);g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value,canvas.height.value);g.drawImage(SpriteList.saturn,0,0);g.setStroke(Color.GhostWhite);g.setFont(FontsLoaded.GemunuLibreEB);g.strokeText("Space Invaders Over Saturn", canvas.width.value/2,canvas.height.value-600, 600);g.fillText("Space Invaders Over Saturn", canvas.width.value/2,canvas.height.value-600, 600);g.setFont(FontsLoaded.GemunuLibreMed);g.setFill(Color.LightYellow);g.fillText("Press Enter Key to Play", canvas.width.value/2, canvas.height.value-200, 300)
+        //val Caption = g.setFont(FontsLoaded.GemunuLibreMed);g.setFill(Color.LightYellow);g.fillText("Press Enter Key to Play", canvas.width.value/2, canvas.height.value-200, 200)
+        //val PauseScreen = g.setFont(FontsLoaded.GemunuLibreReg); g.setFill(CustomColors.pausescreenbg); g.fillRect(0, 0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value / 2, canvas.height.value - 550,400);g.setFont(FontsLoaded.GemunuLibreMed);g.strokeText("Press Enter to Continue or N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 250, 500)
+        //val LoseScreen = g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.drawImage(SpriteList.DeadBackground, 0, 0);g.setFont(FontsLoaded.GemunuLibreEB);g.setFill(Color.Black);g.fillText("You Lose", canvas.width.value/2, 2*canvas.height.value/3);g.setFont(FontsLoaded.GemunuLibreMed);g.fillText("Press N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 200, 500)
+      var showStartScreen = true
+      var beginGame = false
+      var ScoreDisplay = false
+      var showPauseScreen = false
+      var showDeadScreen = false
+      var LivesDisplay = false
+      var TimeDisplay = false
+      var Score:Int = 0
+      var Lives:Int = 5
+      var Time: Int = 100
+      var count:Int = 0
+      
 
+      
+      //var TimeBoard = g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Time.toString(), canvas.width.value/2 -50, canvas.height.value - 750, 100)
+      //var ScoreBoard = g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Score.toString(), canvas.width.value/3, canvas.height.value -750, 300)
+      //var LifeBoard = g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 50, canvas.height.value - 800);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Lives.toString(), 2*canvas.width.value/3+10, canvas.height.value -750, 300)
+      canvas.requestFocus()
 
-            
-            val TitleScreen = g.setTextAlign(TextAlignment.Center);g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value,canvas.height.value);g.setStroke(Color.LightYellow);g.setFont(FontsLoaded.GemunuLibreEB);g.strokeText("San Antonio Space Invaders", canvas.width.value/2,canvas.height.value-600, 400);g.setFont(FontsLoaded.GemunuLibreMed);g.setFill(Color.LightYellow);g.fillText("Press Enter Key to Play", canvas.width.value/2, canvas.height.value-200, 200)
-            //val Caption = g.setFont(FontsLoaded.GemunuLibreMed);g.setFill(Color.LightYellow);g.fillText("Press Enter Key to Play", canvas.width.value/2, canvas.height.value-200, 200)
-            //val PauseScreen = g.setFill(CustomColors.pausescreenbg);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value/2, canvas.height.value-550, 400)
+      // var enter = 0
+      // var escape = 0
+
+      canvas.onKeyPressed = (e: KeyEvent) => {
+        if (e.code == KeyCode.Enter) {
+          beginGame = true
+          ScoreDisplay = true
+          LivesDisplay = true
+          TimeDisplay = true
+          showPauseScreen = false
+          showDeadScreen = false
+          showStartScreen = false
+        }
+
+        if (e.code == KeyCode.N) {
+          beginGame = true
+          ScoreDisplay = true
+          LivesDisplay = true
+          TimeDisplay = true
+          Swarm = new EnemySwarm(6, 3)
+          showDeadScreen = false
+          showStartScreen = false
+          showPauseScreen = false
+          Time = 100
+          Lives = 5
+          killcounter = 0
+          bulletinterception = 0
+        }
         
-            canvas.requestFocus()
+        if (e.code == KeyCode.Escape) {
+          showPauseScreen = true
+          beginGame = false
+          showDeadScreen = false
+          showStartScreen = false
+          LivesDisplay = false
+          ScoreDisplay = false
+          TimeDisplay = false
+        }
 
-            var enter = 0
-            var escape = 0
+        
 
-                canvas.onKeyPressed = (e:KeyEvent) => {
-                if(e.code == KeyCode.Enter){
-                enter += 1
-                }
-                
-                if(e.code == KeyCode.Escape){
-                escape += 1
-                } 
+        if (e.code == KeyCode.Left || e.code == KeyCode.A) {
+          KeysTrackedSet += KeyCode.Left
+          // Gamer.moveLeft()
+        }
 
-                if (e.code == KeyCode.Left){
-                KeysTrackedSet+=KeyCode.Left
-                Gamer.moveLeft()
-                }
+        if (e.code == KeyCode.Right || e.code == KeyCode.D) {
+          KeysTrackedSet += KeyCode.Right
+          // Gamer.moveRight()
+        }
+        if (e.code == KeyCode.Up || e.code == KeyCode.W) {
+          KeysTrackedSet += KeyCode.Up
+          // Gamer.moveUp()
+        }
+        if (e.code == KeyCode.Down || e.code == KeyCode.S) {
+          KeysTrackedSet += KeyCode.Down
+          // Gamer.moveDown()
+        }
 
-                if (e.code == KeyCode.Right){
-                KeysTrackedSet+=KeyCode.Right
-                Gamer.moveRight()
-                }
-                if (e.code == KeyCode.Up){
-                KeysTrackedSet+=KeyCode.Up
-                Gamer.moveUp()
-                }
-                if (e.code == KeyCode.Down){
-                KeysTrackedSet+=KeyCode.Down
-                Gamer.moveDown()
-                }
-                
-                if (e.code == KeyCode.Space){
-                KeysTrackedSet+=KeyCode.Space
-                //BulletBuffer += Gamer.shoot()
-                }
+        if (e.code == KeyCode.Space) {
+          KeysTrackedSet += KeyCode.Space
+          // BulletBuffer += Gamer.shoot()
+        }
 
-                if (e.code == KeyCode.T){
-                    Gamer.moveTo(Vec2(615,720))
+        /*if (e.code == KeyCode.T) {
+          Gamer.moveTo(Vec2(615, 720))
+        }*/ //Teleportation powerup?
+        /*
+                if (e.code == KeyCode.W){
+                    KeysTrackedSet += KeyCode.W
+                    Gamer.moveUp()
                 }
-                
+                if (e.code == KeyCode.A) {
+                    KeysTrackedSet += KeyCode.A
+                    Gamer.moveLeft()
+                }
+                if (e.code == KeyCode.S) {
+                    KeysTrackedSet += KeyCode.S
+                    Gamer.moveDown()
+                }
+                if (e.code == KeyCode.D) {
+                    KeysTrackedSet += KeyCode.D
+                    Gamer.moveRight()
+                }
+         */
+
+      }
+      canvas.onKeyReleased = (e: KeyEvent) => {
+        if (e.code == KeyCode.Left || e.code == KeyCode.A) {
+          KeysTrackedSet -= KeyCode.Left
+        }
+        if (e.code == KeyCode.Right || e.code == KeyCode.D) {
+          KeysTrackedSet -= KeyCode.Right
+        }
+        if (e.code == KeyCode.Up || e.code == KeyCode.W) {
+          KeysTrackedSet -= KeyCode.Up
+        }
+        if (e.code == KeyCode.Down || e.code == KeyCode.S) {
+          KeysTrackedSet -= KeyCode.Down
+        }
+        if (e.code == KeyCode.Space) {
+          KeysTrackedSet -= KeyCode.Space
+        }
+      }
+
+
+      var killcounter = 0
+      var bulletinterception = 0
+      var slowdown = 0
+      var enemyslowdown = 0
+      val timer = AnimationTimer(t => {
+
+        if (showStartScreen == true) {
+          g.setTextAlign(TextAlignment.Center);g.setFill(CustomColors.background);g.fillRect(0, 0, canvas.width.value, canvas.height.value);g.drawImage(SpriteList.saturn, 0, 0); g.setStroke(Color.GhostWhite);g.setFont(FontsLoaded.GemunuLibreEB);g.strokeText("Space Invaders Over Saturn", canvas.width.value / 2, canvas.height.value - 600, 600);g.fillText("Space Invaders Over Saturn", canvas.width.value / 2, canvas.height.value - 600, 600); g.setFont(FontsLoaded.GemunuLibreMed);g.setFill(Color.LightYellow);g.fillText("Press Enter Key to Play", canvas.width.value / 2, canvas.height.value - 200, 300) 
+
+          //copied command of TitleScreen
+        }
+        
+
+
+        if (beginGame) {
+    /*Background*/      g.drawImage(SpriteList.saturn, 0, 0)
+    /*Score*/      g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText("Score: "+Score.toString(), canvas.width.value/3-20, canvas.height.value -750, 300)
+    /*Hearts*/     g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 50, canvas.height.value - 785);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Lives.toString(), 2*canvas.width.value/3+30, canvas.height.value -750, 300)
+    /*Time*/       g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Time.toString(), canvas.width.value/2 -50, canvas.height.value - 750, 100)
+          Gamer.display(g)
+          Swarm.display(g)
+          Swarm.swarmMove()
+          enemyslowdown += 1
+          count+=1
+            /*if(escape >= 1){
+                    g.setFill(CustomColors.pausescreenbg);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value/2, canvas.height.value-550, 400)*/ // THIS IS PAUSE SCREEN CODE
+                if (KeysTrackedSet.contains(KeyCode.Left)) {
+          Gamer.moveLeft()
+        }
+        if (KeysTrackedSet.contains(KeyCode.Right)) {
+          Gamer.moveRight()
+        }
+        if (KeysTrackedSet.contains(KeyCode.Up)) {
+          Gamer.moveUp()
+        }
+        if (KeysTrackedSet.contains(KeyCode.Down)) {
+          Gamer.moveDown()
+        }
+
+        if (KeysTrackedSet.contains(KeyCode.Space)) {
+          slowdown += 1
+          if (slowdown > 0) {
+            slowdown = -15
+            BulletBuffer += Gamer.shoot()
+          }
+
+        } // MACHINE GUN POWER UP LOL but only if without slowdown
+        
+        
+        }
+        // println(Gamer.initPos.x.toString())
+        // println(Gamer.initPos.y.toString())
+        if (showPauseScreen) {
+            g.setFont(FontsLoaded.GemunuLibreReg); g.setFill(CustomColors.pausescreenbg); g.fillRect(0, 0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value / 2, canvas.height.value - 550,400);g.setFont(FontsLoaded.GemunuLibreMed);g.strokeText("Press Enter to Continue or N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 250, 500)
+        }
+
+         if (Lives == 0 || Time == 0) {
+            showPauseScreen = false
+            beginGame = false
+            showDeadScreen = true
+            LivesDisplay = false
+            ScoreDisplay = false
+            TimeDisplay = false
+            showStartScreen = false
+        }
+
+        if (showDeadScreen) {
+            g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.drawImage(SpriteList.DeadBackground, 0, 0);g.setFont(FontsLoaded.GemunuLibreEB);g.setFill(Color.Black);g.fillText("You Lose", canvas.width.value/2, 2*canvas.height.value/3);g.setFont(FontsLoaded.GemunuLibreMed);g.fillText("Press N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 200, 500)
+        }   
+
+        if(count > 0){
+            count = -60
+            Time -= 1
+        }
+        if (enemyslowdown > 0) {
+          enemyslowdown = -45
+          BulletBuffer += Swarm.swarmshoot()
+        }
+
+        for (Bullet <- BulletBuffer) {
+          Bullet.display(g)
+          Bullet.timeStep()
+        }
+
+        for (i <- 0 until BulletBuffer.length) {
+          if (
+            BulletBuffer(i).initPos.y > 830 || BulletBuffer(i).initPos.y < -30
+          )
+            BulletRemoveBuffer += BulletBuffer(i)
+
+          val ebp =
+            SpriteList.EnemyBullet // enemy bullet pic, need it to specify that only enemy bullets have this action
+          if (
+            Gamer.intersection(BulletBuffer(i)) && BulletBuffer(i).pic == ebp
+          ) {
+            Gamer.moveTo(Vec2(615, 720))
+            Lives -= 1 
+            BulletRemoveBuffer += BulletBuffer(i)
+          }
+        }
+        BulletBuffer --= BulletRemoveBuffer
+        for (i <- 0 until BulletBuffer.length) {
+          // Swarm.enemyHit(BulletBuffer(i))
+          if (Swarm.enemyHit(BulletBuffer(i))) {
+            BulletRemoveBuffer += BulletBuffer(i)
+            killcounter+=1
+           
+          }
+          if (Swarm.enemyBump(Gamer)) {
+            Lives -= 1
+            Gamer.moveTo(Vec2(615, 720))
+          }
+
+          // println(escape)
+          // println(enter)
+          // println(KeysTrackedSet)
+          // println(enemyslowdown)
+          for (j <- 0 until BulletBuffer.length) {
+            if (i != j) {
+              if ((BulletBuffer(i).intersection(BulletBuffer(j)))) {
+                bulletinterception += 1 
+                BulletRemoveBuffer += BulletBuffer(i)
+                BulletRemoveBuffer += BulletBuffer(j)
+              }
             }
-                canvas.onKeyReleased = (e:KeyEvent) => {
-                if(e.code == KeyCode.Left){
-                KeysTrackedSet -= KeyCode.Left
-                }
-                if(e.code == KeyCode.Right){
-                KeysTrackedSet -= KeyCode.Right
-                }
-                if(e.code == KeyCode.Up){
-                KeysTrackedSet -= KeyCode.Up
-                }
-                if(e.code == KeyCode.Down){
-                KeysTrackedSet -= KeyCode.Down
-                }
-                if(e.code == KeyCode.Space){
-                KeysTrackedSet -=KeyCode.Space
-                }
-                }
-
-
-            var slowdown = 0
-            var enemyslowdown = 0
-            val timer = AnimationTimer(t=>{
-
-                if(enter == 0){
-                TitleScreen
-                }
-                //if(enter>=1){
-                //Caption
-                //}
-
-                if(KeysTrackedSet.contains(KeyCode.Left)){
-                Gamer.moveLeft()
-                }
-                if(KeysTrackedSet.contains(KeyCode.Right)){
-                Gamer.moveRight()
-                }
-                if(KeysTrackedSet.contains(KeyCode.Up)){
-                Gamer.moveUp()
-                }
-                if(KeysTrackedSet.contains(KeyCode.Down)){
-                Gamer.moveDown()
-                }
-
-                if(KeysTrackedSet.contains(KeyCode.Space)){
-                slowdown +=1
-                if (slowdown > 0){
-                slowdown = 0
-                BulletBuffer += Gamer.shoot()
-                }
-                
-                }//MACHINE GUN POWER UP LOL but only if without slowdown
-                
-                if(enter >= 1){
-                g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value,canvas.height.value)
-                Gamer.display(g)
-                Swarm.display(g)
-                enemyslowdown+=1
-                    /*if(escape >= 1){
-                    g.setFill(CustomColors.pausescreenbg);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value/2, canvas.height.value-550, 400)*///THIS IS PAUSE SCREEN CODE
-                }
-                //println(Gamer.initPos.x.toString())
-                //println(Gamer.initPos.y.toString())
-                
-                
-                if(enemyslowdown > 0){
-                enemyslowdown = -45
-                BulletBuffer += Swarm.swarmshoot()
-                }
-                
-                for(Bullet <- BulletBuffer){
-                    Bullet.display(g)
-                    Bullet.timeStep() 
-                }
-
-                for(i <- 0 until BulletBuffer.length){
-                if(BulletBuffer(i).initPos.y> 830 || BulletBuffer(i).initPos.y < -30)
-                    BulletRemoveBuffer+= BulletBuffer(i)
-                
-                val ebp = SpriteList.EnemyBullet //enemy bullet pic, need it to specify that only enemy bullets have this action
-                if(Gamer.intersection(BulletBuffer(i)) && BulletBuffer(i).pic == ebp){
-                    Gamer.moveTo(Vec2(615,720))
-                    BulletRemoveBuffer+=BulletBuffer(i)
-                }
-            }
-                BulletBuffer --= BulletRemoveBuffer
-                for(i <- 0 until BulletBuffer.length){
-                    //Swarm.enemyHit(BulletBuffer(i))
-                if(Swarm.enemyHit(BulletBuffer(i))){
-                    BulletRemoveBuffer+=BulletBuffer(i)
-                }
-                if(Swarm.enemyBump(Gamer)){
-                    Gamer.moveTo(Vec2(615,720))
-                }
-                
-                //println(escape)
-                //println(enter)
-                //println(KeysTrackedSet)
-                println(enemyslowdown)
-                for(j <- 0 until BulletBuffer.length){
-                    if(i != j){
-                        if((BulletBuffer(i).intersection(BulletBuffer(j)))){
-                                BulletRemoveBuffer +=BulletBuffer(i)
-                                BulletRemoveBuffer += BulletBuffer(j)
-                        }
-                    }
-                    //println(BulletBuffer(i).pic != BulletBuffer(j).pic)
-                }
-                
-                }
-                BulletBuffer --= BulletRemoveBuffer
-
-
-                if (Swarm.isEmpty()){
-            
-                Swarm = new EnemySwarm(6,3)
-                Swarm.display(g)
-                }
-
-
-            })
-
-            timer.start()
-            canvas.requestFocus()
+            // println(BulletBuffer(i).pic != BulletBuffer(j).pic)
+          }
 
         }
+        BulletBuffer --= BulletRemoveBuffer
+
+        if (Swarm.isEmpty()) {
+
+          Swarm = new EnemySwarm(6, 3)
+          Swarm.display(g)
+        }
+
+         Score = killcounter*100 + bulletinterception*25 //could do += for exponential growth
+
+      })
+
+      timer.start()
+      canvas.requestFocus()
 
     }
 
-}
-
-object FontsLoaded  {
-    val path1 = getClass().getResource("/GemunuLibre/GemunuLibre-Medium.ttf").toString()
-    val GemunuLibreMed = Font.loadFont(path1, 25)
-    val path2 = getClass().getResource("/GemunuLibre/GemunuLibre-ExtraLight.ttf").toString()
-    val GemunuLibreExLi = Font.loadFont(path2, 40)
-    val path3 = getClass().getResource("/GemunuLibre/GemunuLibre-Light.ttf").toString()
-    val GemunuLibreLight = Font.loadFont(path3, 40)
-    val path4 = getClass().getResource("/GemunuLibre/GemunuLibre-Regular.ttf").toString()
-    val GemunuLibreReg = Font.loadFont(path4, 40)
-    val path5 = getClass().getResource("/GemunuLibre/GemunuLibre-SemiBold.ttf").toString()
-    val GemunuLibreSB = Font.loadFont(path5, 40)
-    val path6 = getClass().getResource("/GemunuLibre/GemunuLibre-Bold.ttf").toString()
-    val GemunuLibreBold = Font.loadFont(path6, 40)
-    val path7 = getClass().getResource("/GemunuLibre/GemunuLibre-ExtraBold.ttf").toString
-    val GemunuLibreEB = Font.loadFont(path7, 40)
-            
-            
+  }
 
 }
 
+object FontsLoaded {
+  val path1 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-Medium.ttf").toString()
+  val GemunuLibreMed = Font.loadFont(path1, 25)
+  val path2 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-ExtraLight.ttf").toString()
+  val GemunuLibreExLi = Font.loadFont(path2, 40)
+  val path3 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-Light.ttf").toString()
+  val GemunuLibreLight = Font.loadFont(path3, 40)
+  val path4 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-Regular.ttf").toString()
+  val GemunuLibreReg = Font.loadFont(path4, 40)
+  val path5 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-SemiBold.ttf").toString()
+  val GemunuLibreSB = Font.loadFont(path5, 40)
+  val path6 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-Bold.ttf").toString()
+  val GemunuLibreBold = Font.loadFont(path6, 40)
+  val path7 =
+    getClass().getResource("/GemunuLibre/GemunuLibre-ExtraBold.ttf").toString
+  val GemunuLibreEB = Font.loadFont(path7, 40)
+
+}
 
 object CustomColors {
-    val background:Color = Color.hsb(230,1,0.1)
-    val pausescreenbg:Color = Color.Black
+  val background: Color = Color.hsb(230, 1, 0.1)
+  val pausescreenbg: Color = Color.Black
 }
 
 object SpriteList {
-    val SpaceCraftpath = getClass().getResource("/Sprites/Spacecraft.png")
-    val SpaceCraft = new Image(SpaceCraftpath.toString())
+  val SpaceCraftpath = getClass().getResource("/Sprites/Spacecraft.png")
+  val SpaceCraft = new Image(SpaceCraftpath.toString())
 
-    val GamerBulletpath = getClass().getResource("/LaserSprite/BlueLaser.png")
-    val GamerBullet = new Image(GamerBulletpath.toString())
+  val GamerBulletpath = getClass().getResource("/LaserSprite/BlueLaser.png")
+  val GamerBullet = new Image(GamerBulletpath.toString())
 
-    val EnemyBulletpath = getClass().getResource("/LaserSprite/RedLaser.png")
-    val EnemyBullet = new Image(EnemyBulletpath.toString())
+  val EnemyBulletpath = getClass().getResource("/LaserSprite/RedLaser.png")
+  val EnemyBullet = new Image(EnemyBulletpath.toString())
 
-    val AlienShipPurplepath = getClass().getResource("/Sprites/AlienShipPurple.png")
-    val AlienShipPurple = new Image(AlienShipPurplepath.toString())
+  val AlienShipPurplepath = getClass().getResource("/Sprites/AlienShipPurple.png")
+  val AlienShipPurple = new Image(AlienShipPurplepath.toString())
 
-    val AlienShipWhitepath = getClass().getResource("/Sprites/AlienShipWhite.png")
-    val AlienShipWhite = new Image(AlienShipPurplepath.toString())
+  val AlienShipWhitepath = getClass().getResource("/Sprites/AlienShipWhite.png")
+  val AlienShipWhite = new Image(AlienShipPurplepath.toString())
 
+  val BackgroundPath = getClass().getResource("/images/saturn.png")
+  val saturn = new Image(BackgroundPath.toString())
+  
+  val DeadBackgroundPath = getClass().getResource("/images/deadastronaut.png")
+  val DeadBackground = new Image(DeadBackgroundPath.toString())
+  
+  val HeartPath = getClass().getResource("/images/heart.png")
+  val Heart = new Image(HeartPath.toString())
 }
