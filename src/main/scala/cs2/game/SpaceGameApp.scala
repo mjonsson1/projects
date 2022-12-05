@@ -150,7 +150,7 @@ object SpaceGameApp extends JFXApp {
                 if(KeysTrackedSet.contains(KeyCode.Space)){
                 slowdown +=1
                 if (slowdown > 0){
-                slowdown = -15
+                slowdown = 0
                 BulletBuffer += Gamer.shoot()
                 }
                 

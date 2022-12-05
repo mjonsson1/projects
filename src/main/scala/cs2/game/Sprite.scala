@@ -21,23 +21,15 @@ import scalafx.scene.input.KeyCode
 
 
 abstract class Sprite (protected val img:Image, protected var pos:Vec2) {
-    /** moves the sprite a relative amount based on a specified vector
-   *  
-   *  @param direction - an offset that the position of the sprite should be moved by
-   *  @return none/Unit
-   */
 
-   val picture = img
+  
+  val picture = img
   def move (direction:Vec2):Unit = {
   pos.x +=direction.x
   pos.y -=direction.y
   
    }
-  /** moves the sprite to a specific location specified by a vector (not a relative movement)
-   *  
-   *  @param location - the new location for the sprite's position
-   *  @return none/Unit
-   */
+
   def moveTo (location:Vec2):Unit = {
   pos.x = location.x
   pos.y = location.y
