@@ -17,6 +17,7 @@ import scalafx.scene.input.KeyCode
  */
 class Bullet(val pic:Image, var initPos:Vec2, private var vel:Vec2) extends Sprite(pic, initPos) {
 
+var velocity = vel
   /** advances the position of the Bullet over a single time step
    * 
    *  @return none/Unit
@@ -28,7 +29,16 @@ class Bullet(val pic:Image, var initPos:Vec2, private var vel:Vec2) extends Spri
     initPos.y-=vel.y
     }
 
+  }
 
+  override def clone():Bullet = {
+
+
+    var clonedpos = new Vec2(this.pos.x,this.pos.y)
+
+    var bulletclone = new Bullet(pic, clonedpos, vel)
+
+    bulletclone
   }
 
   

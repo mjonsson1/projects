@@ -81,5 +81,14 @@ class Player(var avatar:Image, var initPos:Vec2, private val bulletPic:Image) ex
     new Bullet(bulletPic, new Vec2(initPos.x+playerwidth/2-3,initPos.y-50), Vec2(0,20))
   }
   
+  override def clone(): Player ={
+
+    var clonedpos:Vec2 = new Vec2(this.pos.x,this.pos.y)
+    var cloned = new Player(this.avatar, clonedpos, this.bulletPic)
+
+    cloned
+    
+  }
+
 
 }

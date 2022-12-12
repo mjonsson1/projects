@@ -1,7 +1,5 @@
 package cs2.adt
 
-import scalafx.scene.input.KeyCode
-
 class TheDeque[A: Manifest] extends Deque[A] {
   // Define the required methods and create any neccessary fields here
 

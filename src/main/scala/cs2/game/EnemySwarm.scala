@@ -44,9 +44,24 @@ class EnemySwarm(private val nRows:Int, private val nCols:Int) {
         wasHit = true
       }
     }
+
       EnemyBuffer --= EnemyRemoveBuffer
       wasHit
    }
+
+
+
+   def clonedbuffer(): Buffer[Enemy]= {
+
+    var clonedbuffer = Buffer[Enemy]()
+    for{Enemy <- EnemyBuffer}{
+      var anEnemy = Enemy.clone()
+
+      clonedbuffer += anEnemy
+    }
+    clonedbuffer
+   }
+
    def enemyBump(A:Sprite): Boolean = {
       val plp = SpriteList.SpaceCraft
       var wasBumped = false
@@ -59,6 +74,7 @@ class EnemySwarm(private val nRows:Int, private val nCols:Int) {
    }
 
   def swarmMove() {EnemyBuffer.foreach(_.move()) }
+
 
    def isEmpty():Boolean = {
     var empty = false

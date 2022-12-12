@@ -28,6 +28,15 @@ class Enemy(pic:Image, var initPos:Vec2, private val bulletPic:Image) extends Sp
     initPos.y += vel
   }
 
+
+  override def clone():Enemy = {
+
+    var clonedEnemypos:Vec2 = Vec2(this.initPos.x, this.initPos.y)
+
+    var clonedEnemy = new Enemy(SpriteList.AlienShipPurple, clonedEnemypos, SpriteList.EnemyBullet)
+
+    clonedEnemy
+  }
   
 
 }

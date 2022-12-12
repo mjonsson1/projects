@@ -24,31 +24,19 @@ import javax.net.ssl.TrustManager
 import java.awt.RenderingHints.Key
 import scala.collection.mutable.Buffer
 import scala.collection.mutable.Set
+import scala.collection.mutable.Stack
 
-/** main object that initiates the execution of the game, including construction
-  * of the window. Will create the stage, scene, and canvas to draw upon. Will
-  * likely contain or refer to an AnimationTimer to control the flow of the
-  * game.
-  */
+
 object SpaceGameApp extends JFXApp {
 
-  val Gamer = new Player(
-    SpriteList.SpaceCraft,
-    new Vec2(615, 720),
-    SpriteList.GamerBullet
-  )
-  val GamerBullet = new Bullet(
-    SpriteList.GamerBullet,
-    new Vec2(Gamer.initPos.x, Gamer.initPos.y + 100),
-    Vec2(0, 2.5)
-  )
-  // val Evil = new Enemy(SpriteList.AlienShipPurple, new Vec2(300,300), SpriteList.EnemyBullet)
-  // val EnemyBullet = new Bullet(SpriteList.EnemyBullet, new Vec2(Enemy.initPos.x,Enemy.initPos.y), Vec2(0,2.5))
-  var Swarm = new EnemySwarm(6, 3)
 
-  var BulletBuffer = Buffer[Bullet]()
-  // var EnemyBulletBuffer = Buffer[Bullet]()
-  var EnemySwarmBuffer = Buffer[Enemy]()
+
+var gs = new GameState()
+
+
+var gsStack = new Stack[GameState]()
+
+
   var KeysTrackedSet = Set[KeyCode]()
   var BulletRemoveBuffer = Buffer[Bullet]()
 
@@ -65,15 +53,9 @@ object SpaceGameApp extends JFXApp {
         //val LoseScreen = g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.drawImage(SpriteList.DeadBackground, 0, 0);g.setFont(FontsLoaded.GemunuLibreEB);g.setFill(Color.Black);g.fillText("You Lose", canvas.width.value/2, 2*canvas.height.value/3);g.setFont(FontsLoaded.GemunuLibreMed);g.fillText("Press N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 200, 500)
       var showStartScreen = true
       var beginGame = false
-      var ScoreDisplay = false
       var showPauseScreen = false
       var showDeadScreen = false
-      var LivesDisplay = false
-      var TimeDisplay = false
-      var Score:Int = 0
-      var Lives:Int = 5
-      var Time: Int = 100
-      var count:Int = 0
+
       
 
       
@@ -82,15 +64,13 @@ object SpaceGameApp extends JFXApp {
       //var LifeBoard = g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 50, canvas.height.value - 800);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Lives.toString(), 2*canvas.width.value/3+10, canvas.height.value -750, 300)
       canvas.requestFocus()
 
-      // var enter = 0
-      // var escape = 0
 
       canvas.onKeyPressed = (e: KeyEvent) => {
         if (e.code == KeyCode.Enter) {
           beginGame = true
-          ScoreDisplay = true
-          LivesDisplay = true
-          TimeDisplay = true
+          gs.ScoreDisplay = true
+          gs.LivesDisplay = true
+          gs.TimeDisplay = true
           showPauseScreen = false
           showDeadScreen = false
           showStartScreen = false
@@ -98,17 +78,18 @@ object SpaceGameApp extends JFXApp {
 
         if (e.code == KeyCode.N) {
           beginGame = true
-          ScoreDisplay = true
-          LivesDisplay = true
-          TimeDisplay = true
-          Swarm = new EnemySwarm(6, 3)
+          gs.ScoreDisplay = true
+          gs.LivesDisplay = true
+          gs.TimeDisplay = true
+          gs.Swarm = new EnemySwarm(6, 3)
           showDeadScreen = false
           showStartScreen = false
           showPauseScreen = false
-          Time = 100
-          Lives = 5
-          killcounter = 0
-          bulletinterception = 0
+          gs.Time = 100
+          gs.Lives = 5
+          gs.killcounter = 0
+          gs.bulletinterception = 0
+          rewindcounter = 0
         }
         
         if (e.code == KeyCode.Escape) {
@@ -116,9 +97,9 @@ object SpaceGameApp extends JFXApp {
           beginGame = false
           showDeadScreen = false
           showStartScreen = false
-          LivesDisplay = false
-          ScoreDisplay = false
-          TimeDisplay = false
+          gs.LivesDisplay = false
+          gs.ScoreDisplay = false
+          gs.TimeDisplay = false
         }
 
         
@@ -144,6 +125,15 @@ object SpaceGameApp extends JFXApp {
         if (e.code == KeyCode.Space) {
           KeysTrackedSet += KeyCode.Space
           // BulletBuffer += Gamer.shoot()
+        }
+
+
+        if (e.code == KeyCode.R){
+          KeysTrackedSet += KeyCode.R
+        }
+
+        if (e.code == KeyCode.M){
+          KeysTrackedSet += KeyCode.M
         }
 
         /*if (e.code == KeyCode.T) {
@@ -185,13 +175,24 @@ object SpaceGameApp extends JFXApp {
         if (e.code == KeyCode.Space) {
           KeysTrackedSet -= KeyCode.Space
         }
+
+        if (e.code == KeyCode.R){
+          KeysTrackedSet -= KeyCode.R
+        }
+
+        if (e.code == KeyCode.K){
+          KeysTrackedSet -= KeyCode.M
+        }
       }
 
 
-      var killcounter = 0
-      var bulletinterception = 0
-      var slowdown = 0
+      //var killcounter = 0
+      //var bulletinterception = 0
+      
       var enemyslowdown = 0
+      var machinegun = -15
+      var slowdown = machinegun
+      var rewindcounter:Double = 0
       val timer = AnimationTimer(t => {
 
         if (showStartScreen == true) {
@@ -202,135 +203,214 @@ object SpaceGameApp extends JFXApp {
         
 
 
+        if(!KeysTrackedSet.contains(KeyCode.R)){
+        
+          
+
         if (beginGame) {
-    /*Background*/      g.drawImage(SpriteList.saturn, 0, 0)
-    /*Score*/      g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText("Score: "+Score.toString(), canvas.width.value/3-20, canvas.height.value -750, 300)
-    /*Hearts*/     g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 50, canvas.height.value - 785);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Lives.toString(), 2*canvas.width.value/3+30, canvas.height.value -750, 300)
-    /*Time*/       g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(Time.toString(), canvas.width.value/2 -50, canvas.height.value - 750, 100)
-          Gamer.display(g)
-          Swarm.display(g)
-          Swarm.swarmMove()
+    /*Background*/ g.drawImage(SpriteList.saturn, 0, 0)
+    /*Score*/      g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText("Score: "+gs.Score.toString(), canvas.width.value/3-220, canvas.height.value -750, 300)
+    /*Hearts*/     g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 350, canvas.height.value - 785);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(gs.Lives.toString(), 2*canvas.width.value/3-270, canvas.height.value -750, 300)
+    /*Time*/       g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(gs.Time.toString(), canvas.width.value/2 -250, canvas.height.value - 750, 100)
+    /*PowerBar*/   g.setFont(FontsLoaded.GemunuLibreExLi);g.setFill(Color.GhostWhite);g.fillText("Rewind Power Remaining: ", 3*canvas.width.value/4- 200, canvas.height.value-750, 275);g.setFill(Color.DarkRed);g.fillRect(78*canvas.width.value/100-100, canvas.height.value -780, (350*(rewindcounter/6000.0))-10, canvas.height.value-763);g.setStroke(Color.SkyBlue);g.strokeRect(78*canvas.width.value/100 -100, canvas.height.value -780, (350*(rewindcounter/6000.0))-10, canvas.height.value-763)
           enemyslowdown += 1
-          count+=1
+
+          gs.Gamer.display(g)
+          gs.Swarm.display(g)
+          gs.Swarm.swarmMove()
+          gs.count+=1
+        
+        if(rewindcounter >= 0){
+        if(rewindcounter <= 5998){
+          rewindcounter+=1
+        }
+        if(rewindcounter == 5999){
+          rewindcounter = 5999
+        }
+      }
+          
+          
             /*if(escape >= 1){
                     g.setFill(CustomColors.pausescreenbg);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value/2, canvas.height.value-550, 400)*/ // THIS IS PAUSE SCREEN CODE
                 if (KeysTrackedSet.contains(KeyCode.Left)) {
-          Gamer.moveLeft()
+          gs.Gamer.moveLeft()
         }
         if (KeysTrackedSet.contains(KeyCode.Right)) {
-          Gamer.moveRight()
+          gs.Gamer.moveRight()
         }
         if (KeysTrackedSet.contains(KeyCode.Up)) {
-          Gamer.moveUp()
+          gs.Gamer.moveUp()
         }
         if (KeysTrackedSet.contains(KeyCode.Down)) {
-          Gamer.moveDown()
+          gs.Gamer.moveDown()
+        }
+
+        if (KeysTrackedSet.contains(KeyCode.M)){
+          machinegun =  0
+        }
+
+        if (!KeysTrackedSet.contains(KeyCode.M)){
+          machinegun = -15
         }
 
         if (KeysTrackedSet.contains(KeyCode.Space)) {
           slowdown += 1
           if (slowdown > 0) {
-            slowdown = -15
-            BulletBuffer += Gamer.shoot()
+            slowdown = machinegun
+            gs.BulletBuffer += gs.Gamer.shoot()
           }
 
         } // MACHINE GUN POWER UP LOL but only if without slowdown
-        
-        
+        //if (KeysTrackedSet.contains(KeyCode.R)){
+          //gs = gsStack.pop()
+        //}
+        //println(KeysTrackedSet.contains(KeyCode.R))
         }
+        //println(gs.count)
         // println(Gamer.initPos.x.toString())
         // println(Gamer.initPos.y.toString())
         if (showPauseScreen) {
             g.setFont(FontsLoaded.GemunuLibreReg); g.setFill(CustomColors.pausescreenbg); g.fillRect(0, 0, canvas.width.value, canvas.height.value);g.strokeText("Quit Game?", canvas.width.value / 2, canvas.height.value - 550,400);g.setFont(FontsLoaded.GemunuLibreMed);g.strokeText("Press Enter to Continue or N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 250, 500)
         }
 
-         if (Lives == 0 || Time == 0) {
+         if (gs.Lives == 0 || gs.Time == 0) {
             showPauseScreen = false
             beginGame = false
             showDeadScreen = true
-            LivesDisplay = false
-            ScoreDisplay = false
-            TimeDisplay = false
+            gs.LivesDisplay = false
+            gs.ScoreDisplay = false
+            gs.TimeDisplay = false
             showStartScreen = false
+            rewindcounter = 0
         }
 
         if (showDeadScreen) {
             g.setFill(CustomColors.background);g.fillRect(0,0, canvas.width.value, canvas.height.value);g.drawImage(SpriteList.DeadBackground, 0, 0);g.setFont(FontsLoaded.GemunuLibreEB);g.setFill(Color.Black);g.fillText("You Lose", canvas.width.value/2, 2*canvas.height.value/3);g.setFont(FontsLoaded.GemunuLibreMed);g.fillText("Press N Key to Start a New Game", canvas.width.value / 2, canvas.height.value - 200, 500)
         }   
 
-        if(count > 0){
-            count = -60
-            Time -= 1
+        if(gs.count > 0){
+            gs.count = -60
+            gs.Time -= 1
         }
         if (enemyslowdown > 0) {
           enemyslowdown = -45
-          BulletBuffer += Swarm.swarmshoot()
+          gs.BulletBuffer += gs.Swarm.swarmshoot()
         }
 
-        for (Bullet <- BulletBuffer) {
+        for (Bullet <- gs.BulletBuffer) {
           Bullet.display(g)
           Bullet.timeStep()
         }
 
-        for (i <- 0 until BulletBuffer.length) {
+        for (i <- 0 until gs.BulletBuffer.length) {
           if (
-            BulletBuffer(i).initPos.y > 830 || BulletBuffer(i).initPos.y < -30
+            gs.BulletBuffer(i).initPos.y > 830 || gs.BulletBuffer(i).initPos.y < -30
           )
-            BulletRemoveBuffer += BulletBuffer(i)
+            BulletRemoveBuffer += gs.BulletBuffer(i)
 
           val ebp =
             SpriteList.EnemyBullet // enemy bullet pic, need it to specify that only enemy bullets have this action
           if (
-            Gamer.intersection(BulletBuffer(i)) && BulletBuffer(i).pic == ebp
+            gs.Gamer.intersection(gs.BulletBuffer(i)) && gs.BulletBuffer(i).pic == ebp
           ) {
-            Gamer.moveTo(Vec2(615, 720))
-            Lives -= 1 
-            BulletRemoveBuffer += BulletBuffer(i)
+            gs.Gamer.moveTo(Vec2(615, 720))
+            gs.Lives -= 1 
+            BulletRemoveBuffer += gs.BulletBuffer(i)
           }
         }
-        BulletBuffer --= BulletRemoveBuffer
-        for (i <- 0 until BulletBuffer.length) {
-          // Swarm.enemyHit(BulletBuffer(i))
-          if (Swarm.enemyHit(BulletBuffer(i))) {
-            BulletRemoveBuffer += BulletBuffer(i)
-            killcounter+=1
+       gs.BulletBuffer --= BulletRemoveBuffer
+        for (i <- 0 until gs.BulletBuffer.length) {
+
+          if (gs.Swarm.enemyHit(gs.BulletBuffer(i))) {
+            BulletRemoveBuffer += gs.BulletBuffer(i)
+            gs.killcounter+=1
            
           }
-          if (Swarm.enemyBump(Gamer)) {
-            Lives -= 1
-            Gamer.moveTo(Vec2(615, 720))
+          if (gs.Swarm.enemyBump(gs.Gamer)) {
+            gs.Lives -= 1
+            gs.Gamer.moveTo(Vec2(615, 720))
           }
 
-          // println(escape)
-          // println(enter)
-          // println(KeysTrackedSet)
-          // println(enemyslowdown)
-          for (j <- 0 until BulletBuffer.length) {
+          for (j <- 0 until gs.BulletBuffer.length) {
             if (i != j) {
-              if ((BulletBuffer(i).intersection(BulletBuffer(j)))) {
-                bulletinterception += 1 
-                BulletRemoveBuffer += BulletBuffer(i)
-                BulletRemoveBuffer += BulletBuffer(j)
+              if ((gs.BulletBuffer(i).intersection(gs.BulletBuffer(j)))) {
+                gs.bulletinterception += 1 
+                BulletRemoveBuffer += gs.BulletBuffer(i)
+                BulletRemoveBuffer += gs.BulletBuffer(j)
               }
             }
-            // println(BulletBuffer(i).pic != BulletBuffer(j).pic)
+
           }
 
         }
-        BulletBuffer --= BulletRemoveBuffer
+       gs.BulletBuffer --= BulletRemoveBuffer
 
-        if (Swarm.isEmpty()) {
+       gsStack.push(gs.deepcopy())
+        println(rewindcounter)
+        if (gs.Swarm.isEmpty()) {
 
-          Swarm = new EnemySwarm(6, 3)
-          Swarm.display(g)
+          gs.Swarm = new EnemySwarm(6, 3)
+          gs.Swarm.display(g)
         }
 
-         Score = killcounter*100 + bulletinterception*25 //could do += for exponential growth
+         gs.Score = gs.killcounter*100 + gs.bulletinterception*25 //could do += for exponential growth
+      }
+
+      else{
+
+
+      if(gs.Time < 100 && rewindcounter > 0){
+        
+
+        if(rewindcounter > 1) {
+          rewindcounter -= 1
+        }
+        if(rewindcounter == 1){
+          rewindcounter = 0
+        }
+        
+        gs = gsStack.pop()
+        
+        
+
+   /*Background*/  g.drawImage(SpriteList.saturn, 0, 0)
+    /*Score*/      g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText("Score: "+gs.Score.toString(), canvas.width.value/3-220, canvas.height.value -750, 300)
+    /*Hearts*/     g.drawImage(SpriteList.Heart, 2*canvas.width.value/3 - 350, canvas.height.value - 785);g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(gs.Lives.toString(), 2*canvas.width.value/3-270, canvas.height.value -750, 300)
+    /*Time*/       g.setFont(FontsLoaded.GemunuLibreLight);g.setFill(Color.GhostWhite);g.fillText(gs.Time.toString(), canvas.width.value/2 -250, canvas.height.value - 750, 100)
+    /*PowerBar*/   g.setFont(FontsLoaded.GemunuLibreExLi);g.setFill(Color.GhostWhite);g.fillText("Rewind Power Remaining: ", 3*canvas.width.value/4- 200, canvas.height.value-750, 275);g.setFill(Color.DarkRed);g.fillRect(78*canvas.width.value/100-100, canvas.height.value -780, (350*(rewindcounter/6000.0))-10, canvas.height.value-763);g.setStroke(Color.SkyBlue);g.strokeRect(78*canvas.width.value/100 -100, canvas.height.value -780, (350*(rewindcounter/6000.0))-10, canvas.height.value-763)
+    
+        gs.Gamer.display(g)
+        gs.Swarm.display(g)
+        
+
+        for(Bullet <- gs.BulletBuffer){
+          Bullet.display(g)
+        }
+        println(rewindcounter)
+      }
+
+
+      
+      }
+
+
+
+
+
+         //DISPLAY
+
+       
 
       })
 
       timer.start()
       canvas.requestFocus()
+
+
+
+
+
+
 
     }
 
