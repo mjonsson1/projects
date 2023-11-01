@@ -1,4 +1,3 @@
-# cs2hw-F22
+executable by running <<sbt>> from the home projects directory -> <<run>> -> <<4>> for Space Game
 
-This is the repository that you will be using to develop and turn in all homework assignments for the semester.
-
+Extra work done for data structures and utility generation included in subfolders
